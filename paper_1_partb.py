@@ -136,7 +136,7 @@ class Diffusion:
         sigma_q = torch.sqrt((( 1 - self.alpha_bar[t-1])/(1 - self.alpha_bar[t])) * self.betas[t])
         
         # m1 and m2 are two scale factors that multiply x0 and xt
-        m1 = torch.sqrt(1 - self.alpha_bar[t-1]) * self.betas[t] / (1 - self.alpha_bar[t])
+        m1 = torch.sqrt(self.alpha_bar[t-1]) * self.betas[t] / (1 - self.alpha_bar[t])
         #m2 = torch.sqrt(1 - self.alpha_bar[t]) * (1 - self.alpha_bar[t-1]) / (1 - self.alpha_bar[t])
         m2 = torch.sqrt(self.alphas[t]) * (1 - self.alpha_bar[t-1]) / (1 - self.alpha_bar[t])
         mu_q = m1 * x0 + m2 * xt
@@ -175,7 +175,8 @@ class Diffusion:
         x = noise
         samples = [x]
         for t in range(self.T, 0, -1): # Reversing the process
-            _,_,x = self.reverse_process(x, t)
+            if not (t == 1):
+                _, _, x = self.reverse_process(x, t)
             samples.append(x)
 
         return samples[::-1] # Reversing the list, since we started from the end
@@ -209,7 +210,7 @@ class Diffusion:
 def training_loop(model, optimizer, batch_size, nb_epochs, device="cpu"):
     
     training_loss = []    
-    for _ in tqdm(range(nb_epochs)):
+    for epochs in tqdm(range(nb_epochs)):
                 
         x0 = sample_batch(batch_size, device=device)
         loss = model.get_loss(x0)
@@ -220,9 +221,13 @@ def training_loop(model, optimizer, batch_size, nb_epochs, device="cpu"):
         
         training_loss.append(loss.item())
         
+        if epochs % 10_000 == 0:
+            plot(model, f"paper_1_partb_{epochs}.png")
+        
+        
     return training_loss
 
-def plot(diffusion_model):
+def plot(diffusion_model, file_name="paper_1_partb.png"):
 
     device = diffusion_model.device
     x0= sample_batch(3_000).to(device)
@@ -252,13 +257,13 @@ def plot(diffusion_model):
     ax[0,2].scatter(xt_40[:, 0].detach().cpu().numpy(), xt_40[:, 1].detach().cpu().numpy(), alpha=0.25)
     ax[0,2].set_title("T")
 
-    ax[1,0].scatter(samples[1][:, 0].detach().cpu().numpy(), samples[1][:, 1].detach().cpu().numpy(), alpha=0.25, color="red")
+    ax[1,0].scatter(samples[0][:, 0].detach().cpu().numpy(), samples[0][:, 1].detach().cpu().numpy(), alpha=0.25, color="red")
     ax[1,1].scatter(samples[20][:, 0].detach().cpu().numpy(), samples[20][:, 1].detach().cpu().numpy(), alpha=0.25, color="red")    
     ax[1,2].scatter(samples[40][:, 0].detach().cpu().numpy(), samples[40][:, 1].detach().cpu().numpy(), alpha=0.25, color="red")     
     
     
     #plt.show()
-    plt.savefig("paper_1_partb.png")
+    plt.savefig(file_name)
 
     
 
@@ -279,7 +284,7 @@ def main():
     diffusion_model = Diffusion(40, mlp_model, device=device)
     
     optimizer = torch.optim.Adam(mlp_model.parameters(), lr=1e-2)
-    training_loss = training_loop(diffusion_model, optimizer, 64_000, 1000, device=device)
+    training_loss = training_loop(diffusion_model, optimizer, 64_000, 300_000, device=device)
 
     plt.plot(training_loss)
     plt.savefig("training_loss.png")
