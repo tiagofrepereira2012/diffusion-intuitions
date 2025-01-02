@@ -56,7 +56,7 @@ where $\bar{\alpha_t}=\prod\limits_{i=1}^{t}1-\beta_i$.
 
 The objective to be optimized is by maximizing the KL divergence between $p$ and $q$:
 
-$- \frac{ \sum\limits{i=0}{N} \log(\sigma_p) - \log(\sigma_q) + \frac{\sigma_q^2 + (\mu_q - \mu_p)^2}{2 \sigma_p^2}}{N}$
+$- \frac{ \sum\limits_{i=0}^{N} \log(\sigma_p) - \log(\sigma_q) + \frac{\sigma_q^2 + (\mu_q - \mu_p)^2}{2 \sigma_p^2}}{N}$
 
 Please, run the script below to see the mechanics of the diffusion model in action.
 
