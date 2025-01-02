@@ -11,12 +11,16 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 # Importing the mnist dataset
-from torchvision.datasets import MNIST
+from torchvision.datasets import MNIST, CIFAR10
+from pathlib import Path
+
+
+# PATH = Path("./paper_2")
 
 
 class DiffusionModel(nn.Module):
     def __init__(self, T, base_model: nn.Module, sample_function, device="cpu"):
-        
+
         super(DiffusionModel, self).__init__()
 
         # self.betas = torch.sigmoid(torch.linspace(-18, 10, T)) * (3e-1 - 1e-5) + 1e-5
@@ -28,7 +32,7 @@ class DiffusionModel(nn.Module):
         self.base_model = base_model.to(device)  # The function approximator
         self.device = device
         self.sample_function = sample_function
-        
+
     def train_one_step(self, optimizer, batch_size=32):
         """
         This is the algorithm 1 from the paper.
@@ -57,7 +61,7 @@ class DiffusionModel(nn.Module):
             torch.sqrt(alpha_bar_t) * x0 + torch.sqrt(1 - alpha_bar_t) * epsilon, t
         )
 
-        #loss = nn.MSELoss(eps_pred, epsilon)
+        # loss = nn.MSELoss(eps_pred, epsilon)
         loss = nn.functional.mse_loss(eps_pred, epsilon)
         optimizer.zero_grad()
         loss.backward()
@@ -81,10 +85,12 @@ class DiffusionModel(nn.Module):
 
             # x_{t-1} = mean + sigma * z # look at line 4
 
+            t = torch.ones(n_samples, device=self.device, dtype=torch.long) * t
+
             beta_t = (
                 self.beta[t - 1].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
             )  # sigma = sqrt(beta_t)
-            alpha_t = self.alpha_t[t - 1].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+            alpha_t = self.alpha[t - 1].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
             alpha_bar_t = (
                 self.alpha_bar[t - 1].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
             )
@@ -110,7 +116,7 @@ def sample_batch_mnist(batch_size, device="cpu"):
 
     # Getting the training and test tensors
     x_train = mnist.data[:50_000].unsqueeze(1).float() / 255.0
-
+    
     indexes = torch.randperm(x_train.shape[0])[:batch_size]
 
     data = x_train[indexes].to(device)
@@ -119,12 +125,28 @@ def sample_batch_mnist(batch_size, device="cpu"):
 
     return data
 
+cifar10 = CIFAR10(root="data", download=True)
+def sample_batch_cifar10(batch_size, device="cpu"):
+    
+    
+    # Getting the training and test tensor
+    x_train = torch.from_numpy(cifar10.data[:40_000]).float() / 255.0
+    
+    # Move to channel first
+    x_train = x_train.permute(0,3,1,2)
+    
+    indexes = torch.randperm(x_train.shape[0])[:batch_size]
+    
+    data = x_train[indexes].to(device)
+    
+    return data
 
 def main():
 
     parser = argparse.ArgumentParser(
         description="Denoising Diffusion Probabilistic Models"
     )
+    parser.add_argument("output_path", type=Path)
     parser.add_argument("--epochs", type=int, default=40_000, help="Number of epochs")
 
     args = parser.parse_args()
@@ -132,45 +154,62 @@ def main():
     print("Running with number of epochs: ", args.epochs)
 
     batch_size = 64
+    n_channels = 3  
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    #device = "cpu"
-    model = UNet()
+    # device = "cpu"
+    model = UNet(in_ch=n_channels)
     optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)
-    difusion_model = DiffusionModel(1000, model, device=device, sample_function=sample_batch_mnist)
+    
+    #sample_batch_cifar10
+    #sample_batch_mnist
+    difusion_model = DiffusionModel(
+        1000, model, device=device, sample_function=sample_batch_cifar10
+    )
 
-    import ipdb
-
-    ipdb.set_trace()
+    # Creating path
+    #PATH.mkdir()
+    path = args.output_path
+    path.mkdir(exist_ok=True)
 
     training_loss = []
 
     for epoch in tqdm(range(args.epochs)):
         loss = difusion_model.train_one_step(optimizer, batch_size=batch_size)
         training_loss.append(loss)
-        
-    
 
-    # 
+        # Plotting the training loss every 100 epochs
+        if epoch > 0 and epoch % 1000 == 0:
+            _, ax = plt.subplots()
+            ax.plot(training_loss)
+            plt.savefig(path / f"training_loss_{epoch}.png")
 
-    # Testing the UNet stuff
-    # mnist = MNIST(root="data", download=True)
+            _, ax = plt.subplots()
+            ax.plot(training_loss[-1000:])
+            # plt.show()
+            plt.savefig(path / f"training_loss_crop_{epoch}.png")
 
-    # Getting the training and test tensors
-    # x_train = mnist.data[:50_000].unsqueeze(1).float() / 255.0
-    # x_test = mnist.data[50_000:].unsqueeze(1).float() / 255.0
+        if epoch > 0 and epoch % 5_000 == 0:
+            # Saving the model
+            # torch.save(model.state_dict(), f"model_{epoch}.pt")
+            nb_images = 9
+            samples = difusion_model.sample(nb_images, n_channels=n_channels)
+            # Created a 3x3 figure
+            fig, axs = plt.subplots(3, 3)
+            for i in range(nb_images):
+                ax = axs[i // 3, i % 3]                
+                #ax.imshow(samples[i].squeeze(0).clip(0, 1).cpu().numpy(), cmap="gray")
+                img = samples[i].permute(1,2,0).clip(0, 1).cpu().numpy()
+                ax.imshow(img)
+                ax.axis("off")
+            plt.savefig(path / f"samples_{epoch}.png")
 
-    # import ipdb; ipdb.set_trace()
-
-    """
-    img = torch.randn(10, 1, 32, 32)
-    model = UNet(ch=128, in_ch=1)
-
-
-    t = (torch.randn(10) * 10).long()
-    out = model(img, t)
-    """
-
-    pass
+            # Saving the model
+            torch.save(model.cpu(), path / f"model_{epoch}.pt")
+            # Moving the model back to the device
+            model.to(device)
+            
+    # Saving the final model
+    torch.save(model.cpu(), path / "model_final.pt")
 
 
 if __name__ == "__main__":

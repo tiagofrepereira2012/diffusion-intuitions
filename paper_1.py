@@ -26,7 +26,7 @@ def main():
     # betas = torch.linspace(1e-4, 1e-2, T)
 
     # Here the author crafted a set of betas that gives a good behaved Gaussian distribution
-    # betas = torch.sigmoid(torch.linspace(-18, 10, T)) * (3e-1 - 1e-5) + 1e-5
+    betas = torch.sigmoid(torch.linspace(-18, 10, T)) * (3e-1 - 1e-5) + 1e-5
 
     # xT = forward_standard(data, T, betas)
     xT_20 = Diffusion(T).forward_closed_form(data, t=20)

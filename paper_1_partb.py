@@ -68,7 +68,6 @@ class MLP(nn.Module):
         # mu, sigma = self.nn_tail[t](h).chunk(
         # 2, dim=-1
         # )  # This will split the output in two parts. Very nice trick, didn't know about it
-
         tmp = self.network_tail[t](h)
         mu, h = torch.chunk(tmp, 2, dim=1)
         sigma = torch.exp(h)
@@ -269,8 +268,8 @@ def plot(diffusion_model, file_name="paper_1_partb.png"):
 
 def main():
     n_samples = 5_000
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    #device = "cpu"
+    #device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu"
     #data = sample_batch(n_samples)
 
     # What we will do basicallz is to take the data and train a NN to learn a
@@ -280,7 +279,7 @@ def main():
 
     # Loading a pretrained model
     #mlp_model = torch.load("./data/model_paper1").to(device)    
-    mlp_model = MLP(hidden_dim=128).to(device)
+    mlp_model = MLP(hidden_dim=128).to(device)    
     diffusion_model = Diffusion(40, mlp_model, device=device)
     
     optimizer = torch.optim.Adam(mlp_model.parameters(), lr=1e-2)
