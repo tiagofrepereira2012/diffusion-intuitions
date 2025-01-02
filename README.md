@@ -26,7 +26,7 @@ The so called Difusion Process consists in to each add gaussian noise in each st
 
 <img src="images/markov_chain.png" alt="Markov Chain" style="width:50%;">
 
-The forward process (corruption phase) is given by:
+The **forward process (corruption phase)** is given by:
 
 $q(x_{1:T}|x_0)=\prod\limits_{t=1}^{T}q(x_t|x_{t-1})$
 
@@ -37,7 +37,7 @@ $q(x_t|x_{t-1})=\mathcal{N}(x_t ; \sqrt{1-\beta_t}x_{t-1},\beta_tI)$
 where $\beta_t$ is the variance schedule of these distributions for each step of the Markov Chain (in an increasing order)
 and $x_0$ is your training data.
 
-The reverse process (recovery phase) is untractable to be computed, but it can be approximated by a simple MLP hence:
+The **reverse process (recovery phase)** is untractable to be computed, but it can be approximated by a simple MLP hence:
 
 $p_\theta(x_{0:T})=p_\theta(x_{T}) \prod\limits_{i=1}^{T} p_\theta(x_{t-1}|x_t)$
 
@@ -46,3 +46,24 @@ where
 $p_\theta(x_{t-1}|x_t)=\mathcal{N}(x_{t-1};\mu_\theta(x_t, t), \sigma_\theta(x_t, t)$
 
 where $\mu_\theta(x_t, t)$ and $\sigma_\theta(x_t, t)$ are the outputs of the MLP for each step $t$.
+
+A nice property of the difusion forward process is that it can be computed in a closed-form, so we can sample $x_t$ at any step of the Markov Chain
+by doing the following:
+
+$q(x_t|x_0)=\mathcal{N}(x_t, \sqrt{\bar{\alpha_t}}x_0), (1-\bar{\alpha_t}I)$
+
+where $\bar{\alpha_t}=\prod\limits_{i=1}^{t}1-\beta_i$.
+
+The objective to be optimized is by maximizing the KL divergence between $p$ and $q$:
+
+$- \frac{ \sum\limits{i=0}{N} \log(\sigma_p) - \log(\sigma_q) + \frac{\sigma_q^2 + (\mu_q - \mu_p)^2}{2 \sigma_p^2}}{N}$
+
+Please, run the script below to see the mechanics of the diffusion model in action.
+
+```bash
+python paper_1_partb.py
+```
+
+Running this using $T=40$ we can pretty much recover the original signal as in the image below.
+
+<img src="images/paper1_diffusion.png" alt="Diffusion Model" style="width:50%;">
