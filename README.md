@@ -24,7 +24,7 @@ In this section the mechanics of the diffusion model are explained and this come
 A Diffusion Probabilistic Model, or Diffusion Model is a generative model modeled using a parametrized Markov Chain that is trained to generate samples from a given distribution (similar to VAE, or GANs).
 The so called Difusion Process consists in to each add gaussian noise in each step of the Markov Chain until the input signal is totally corrupted, and then a simple MLP is used to recover the original signal as showed in the image below.
 
-<img src="images/markov_chain.png" alt="Markov Chain" style="width:50%;">
+<img src="images/markov_chain.png" alt="Markov Chain" style="width:100%;">
 
 The **forward process (corruption phase)** is given by:
 
@@ -66,4 +66,4 @@ python paper_1_partb.py
 
 Running this using $T=40$ we can pretty much recover the original signal as in the image below.
 
-<img src="images/paper1_diffusion.png" alt="Diffusion Model" style="width:50%;">
+<img src="images/paper1_diffusion.png" alt="Diffusion Model" style="width:100%;">
