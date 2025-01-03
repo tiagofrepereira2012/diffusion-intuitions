@@ -79,7 +79,7 @@ The contribution of this paper is showing that the diffusion model can be used t
 At first they simplified (empirically) the learning objective by setting the variance of the gaussian distribution to a fixed size $\sigma^2_t = \beta_t$, then the loss can be
 simplyfied to:
 
-$L_\text{simple}(\theta)=\mathbb{E}_{t,x_0,\epsilon}[|| \epsilon -  \epsilon_\theta(\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1-\bar{\alpha_t}}\epsilon, t)||^2]$.
+$L_\text{simple}(\theta)=E_{t,x_0,\epsilon}[|| \epsilon -  \epsilon_\theta(\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1-\bar{\alpha_t}}\epsilon, t)||^2]$.
 
 Evertything is pretty much simple to be implemented except for $\epsilon_\theta$ that is parametrized with an UNET architecture.
 A few things to be noted in this UNET architecture is:
