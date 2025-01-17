@@ -3,3 +3,10 @@ matplotlib
 torch
 torchvision
 scikit-learn
+imageio
+imageio[ffmpeg]
+diffusers
+transformers
+accelerate
+scipy
+safetensors

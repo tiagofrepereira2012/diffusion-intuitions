@@ -173,6 +173,7 @@ class UNet(nn.Module):
         self.linear2 = nn.Linear(4 * ch, 4 * ch)
 
         self.conv1 = nn.Conv2d(in_ch, ch, 3, stride=1, padding=1)
+        #self.conv1 = nn.Conv2d(in_ch, ch, 1, stride=1, padding=1)
 
         self.down = nn.ModuleList(
             [
@@ -224,6 +225,7 @@ class UNet(nn.Module):
         )
 
         self.final_conv = nn.Conv2d(ch, in_ch, 3, stride=1, padding=1)
+        #self.final_conv = nn.Conv2d(ch, in_ch, 1, stride=1, padding=1)
 
     def forward(self, x, t):
         """
