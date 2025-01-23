@@ -52,7 +52,7 @@ by doing the following:
 
 $q(x_t|x_0)=\mathcal{N}(x_t, \sqrt{\bar{\alpha_t}}x_0), (1-\bar{\alpha_t}I)$
 
-where $ `\bar{\alpha_t}=\prod\limits_{i=1}^{t} 1 - \beta_{i} `$.
+where $`\bar{\alpha_t}=\prod\limits_{i=1}^{t} 1 - \beta_{i}`$.
 
 The objective to be optimized is by maximizing the KL divergence between $p$ and $q$, which is the ELBO (Evidence Lower Bound) as in the equation below:
 
