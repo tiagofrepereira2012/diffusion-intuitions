@@ -39,7 +39,7 @@ and $x_0$ is your training data.
 
 The **reverse process (recovery phase)** is untractable to be computed, but it can be approximated by a simple MLP hence:
 
-$p_\theta(x_{0:T})=p_\theta(x_{T}) \prod\limits_{i=1}^{T} p_\theta(x_{t-1}|x_t)$
+$ p_\theta(x_{0:T})=p_\theta(x_{T}) \prod\limits_{i=1}^{T} p_\theta(x_{t-1}|x_t) $
 
 where 
 
@@ -52,7 +52,7 @@ by doing the following:
 
 $q(x_t|x_0)=\mathcal{N}(x_t, \sqrt{\bar{\alpha_t}}x_0), (1-\bar{\alpha_t}I)$
 
-where $\bar{\alpha_t}=\prod\limits_{i=1}^{t}1-\beta_i$.
+where $\bar{\alpha_t}=\prod\limits_{i=1}^{t}1- \beta_i $.
 
 The objective to be optimized is by maximizing the KL divergence between $p$ and $q$, which is the ELBO (Evidence Lower Bound) as in the equation below:
 
