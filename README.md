@@ -65,7 +65,7 @@ This is clearly diferentiable, so we can use SGD to optimize the parameters of t
 Please, run the script below to see the mechanics of the diffusion model in action.
 
 ```bash
-python paper_1_partb.py
+python first_paper.py
 ```
 
 Running this using $T=40$ we can pretty much recover the original signal as in the image below.
@@ -93,6 +93,31 @@ A few things to be noted in this UNET architecture is:
  Please, run the script below to see the mechanics of the diffusion model in action.
 
 ```bash
-python paper_2.py
+python ddpm_paper.py --help # to see the options
 ```
- 
+
+It is possible to create a generative model either from the MNIST or the CIFAR10 dataset.
+If I get the FFHQ dataset, I will try to generate it for this one as well.
+
+Follow below a simple sampling from its distribution.
+
+<img src="images/paper2_difusion.png" alt="Diffusion Model" style="width:100%;">
+
+This was after 35000 iterations of training. Obvisouly, we can do better than this.
+
+There are several things you can do with a diffusion model, like:
+ - Image inpainting
+ - Image super-resolution
+ - Image denoising
+ - Image generation
+
+The script below shows how to do image inpainting using the diffusion model.
+In painting consists into preserve part of the original image at each iteration of the Markov Chain, so the diffusion model can "complete" the image.
+
+```bash
+python inpainting.py --help # to see the options
+```
+
+
+<img src="images/inpainting.png" alt="Diffusion Model" style="width:100%;">
+

@@ -3,7 +3,7 @@ from torchvision.datasets import CIFAR10, MNIST
 import torch.nn as nn
 import argparse
 from tqdm import tqdm
-from paper_2 import DiffusionModel
+from ddpm_paper import DiffusionModel
 
 # from unet import UNet
 from pathlib import Path
@@ -13,6 +13,8 @@ import numpy as np
 
 cifar10 = CIFAR10(root="data", download=True)
 mnist = MNIST(root="data", download=True)
+
+
 
 
 def sample_batch_cifar10(batch_size, device="cpu"):
@@ -71,21 +73,21 @@ def main():
 
     # Taking 100 samples uniformly from all_steps
     samples = all_steps[::10]
-    
-    
-    import ipdb; ipdb.set_trace()
 
-    #imageio.mimsave("movie.gif", samples)
-    
+    import ipdb
+
+    ipdb.set_trace()
+
+    # imageio.mimsave("movie.gif", samples)
+
     samples = np.array(samples, dtype=np.uint8)
-    
-    
+
     # Channel last
     samples = samples.transpose(0, 2, 3, 1)
     imageio.mimsave("movie.mp4", samples)
-    
-    #plt.imshow(all_steps[-1], cmap="gray")
-    #plt.savefig("movie.png")
+
+    # plt.imshow(all_steps[-1], cmap="gray")
+    # plt.savefig("movie.png")
 
 
 @torch.no_grad()
@@ -130,8 +132,8 @@ def animate(diffusion_model, image_channels=1, img_size=(32, 32)):
 
         # x_t = mean + sigma * z
         x_t = mean + sigma * z
-        #all_steps.append(x_t[0].cpu().numpy())
-        all_steps.append((x_t[0].cpu().numpy()*255).astype(np.uint8))
+        # all_steps.append(x_t[0].cpu().numpy())
+        all_steps.append((x_t[0].cpu().numpy() * 255).astype(np.uint8))
 
     return all_steps
 

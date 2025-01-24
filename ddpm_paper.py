@@ -116,7 +116,7 @@ def sample_batch_mnist(batch_size, device="cpu"):
 
     # Getting the training and test tensors
     x_train = mnist.data[:50_000].unsqueeze(1).float() / 255.0
-    
+
     indexes = torch.randperm(x_train.shape[0])[:batch_size]
 
     data = x_train[indexes].to(device)
@@ -125,49 +125,66 @@ def sample_batch_mnist(batch_size, device="cpu"):
 
     return data
 
+
 cifar10 = CIFAR10(root="data", download=True)
+
+
 def sample_batch_cifar10(batch_size, device="cpu"):
-    
-    
+
     # Getting the training and test tensor
     x_train = torch.from_numpy(cifar10.data[:40_000]).float() / 255.0
-    
+
     # Move to channel first
-    x_train = x_train.permute(0,3,1,2)
-    
+    x_train = x_train.permute(0, 3, 1, 2)
+
     indexes = torch.randperm(x_train.shape[0])[:batch_size]
-    
+
     data = x_train[indexes].to(device)
-    
+
     return data
 
+
 def main():
+
+    databases = ["MNIST", "CIFAR10"]
 
     parser = argparse.ArgumentParser(
         description="Denoising Diffusion Probabilistic Models"
     )
     parser.add_argument("output_path", type=Path)
     parser.add_argument("--epochs", type=int, default=40_000, help="Number of epochs")
+    parser.add_argument(
+        "--database",
+        type=str,
+        default="MNIST",
+        help="Database to use. Default `MNIST`",
+        choices=databases,
+    )
 
     args = parser.parse_args()
 
     print("Running with number of epochs: ", args.epochs)
 
     batch_size = 64
-    n_channels = 3  
+    n_channels = 1 if args.database == "MNIST" else 3
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # device = "cpu"
     model = UNet(in_ch=n_channels)
     optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)
-    
-    #sample_batch_cifar10
-    #sample_batch_mnist
+
+    # sample_batch_cifar10
+    # sample_batch_mnist
+
+    sample_function = (
+        sample_batch_mnist if args.database == "MNIST" else sample_batch_cifar10
+    )
+
     difusion_model = DiffusionModel(
-        1000, model, device=device, sample_function=sample_batch_cifar10
+        1000, model, device=device, sample_function=sample_function
     )
 
     # Creating path
-    #PATH.mkdir()
+    # PATH.mkdir()
     path = args.output_path
     path.mkdir(exist_ok=True)
 
@@ -196,9 +213,9 @@ def main():
             # Created a 3x3 figure
             fig, axs = plt.subplots(3, 3)
             for i in range(nb_images):
-                ax = axs[i // 3, i % 3]                
-                #ax.imshow(samples[i].squeeze(0).clip(0, 1).cpu().numpy(), cmap="gray")
-                img = samples[i].permute(1,2,0).clip(0, 1).cpu().numpy()
+                ax = axs[i // 3, i % 3]
+                # ax.imshow(samples[i].squeeze(0).clip(0, 1).cpu().numpy(), cmap="gray")
+                img = samples[i].permute(1, 2, 0).clip(0, 1).cpu().numpy()
                 ax.imshow(img)
                 ax.axis("off")
             plt.savefig(path / f"samples_{epoch}.png")
@@ -207,7 +224,7 @@ def main():
             torch.save(model.cpu(), path / f"model_{epoch}.pt")
             # Moving the model back to the device
             model.to(device)
-            
+
     # Saving the final model
     torch.save(model.cpu(), path / "model_final.pt")
 
