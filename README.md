@@ -118,6 +118,7 @@ In painting consists into preserve part of the original image at each iteration 
 python inpainting.py --help # to see the options
 ```
 
-
 <img src="images/inpainting.png" alt="Diffusion Model" style="width:100%;">
+
+Of course, the inpainting is not perfect, we can do some post-processing to make it better, but this is not the point here.
 
